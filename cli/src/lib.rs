@@ -221,12 +221,8 @@ impl NodeBuilder {
     /// - `Ok(None)` if the command executed successfully and did not lead to node creation
     /// - `Err(_)` if an error occurred during command execution
     #[doc(hidden)] // unstable
-    pub fn execute_command(self) -> Result<Option<Node>, failure::Error> {
-        let command = if let Some(args) = self.args {
-            Command::from_iter(args)
-        } else {
-            Command::from_args()
-        };
+    pub fn execute_command<C: StructOpt + ExonumCommand>(self) -> Result<Option<Node>, failure::Error> {
+        let command = self.args.map(C::from_iter).unwrap_or_else(C::from_args);
 
         if let StandardResult::Run(run_config) = command.execute()? {
             let genesis_config = Self::genesis_config(&run_config, self.builtin_instances);
@@ -256,10 +252,16 @@ impl NodeBuilder {
     }
 
     /// Configures the node using parameters provided by user from stdin and then runs it.
-    pub fn run(mut self) -> Result<(), failure::Error> {
+    pub fn run(self) -> Result<(), failure::Error> {
+        self.run_with_command_type::<Command>()
+    }
+
+    /// Same as [run](struct.NodeBuilder.html#method.run) with supplied
+    /// [ExonumCommand](command/trait.ExonumCommand.html) implementation.
+    pub fn run_with_command_type<C: StructOpt + ExonumCommand>(mut self) -> Result<(), failure::Error> {
         // Store temporary directory until the node is done.
         let _temp_dir = self.temp_dir.take();
-        if let Some(node) = self.execute_command()? {
+        if let Some(node) = self.execute_command::<C>()? {
             node.run()
         } else {
             Ok(())

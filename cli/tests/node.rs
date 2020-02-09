@@ -33,6 +33,7 @@ use std::{
 };
 
 use exonum_cli::NodeBuilder;
+use exonum_cli::command::Command;
 
 const PORTS: usize = 1;
 lazy_static! {
@@ -95,7 +96,7 @@ fn node_basic_workflow() -> Result<(), failure::Error> {
     let node = NodeBuilder::with_args(args)
         .with_default_rust_service(SimpleService)
         .with_instance(other_instance)
-        .execute_command()?
+        .execute_command::<Command>()?
         .unwrap();
     let shutdown_handle = node.shutdown_handle();
     let node_thread = thread::spawn(|| {
