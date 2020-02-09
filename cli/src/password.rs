@@ -25,7 +25,7 @@ use std::{env, str::FromStr};
 pub const DEFAULT_MASTER_PASS_ENV_VAR: &str = "EXONUM_MASTER_PASS";
 
 /// A wrapper around `String` which securely erases itself on drop.
-#[derive(Debug, Default, Serialize, Deserialize, PartialEq)]
+#[derive(Debug, Clone, Default, Serialize, Deserialize, PartialEq)]
 pub struct Passphrase(String);
 
 impl Drop for Passphrase {
